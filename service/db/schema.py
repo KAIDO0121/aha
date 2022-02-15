@@ -1,11 +1,15 @@
-from pydantic import BaseModel
 from datetime import datetime
-
-
-class User(BaseModel):
+from pydantic import BaseModel
+class UserBase(BaseModel): # common fields
     email: str
-    hashed_password: str
     name: str
+
+class UserCreate(UserBase): # fields needed for create only
+    password: str
+
+class User(UserBase):# fields needed for read only
+    id: int
+    create_time: datetime
 
     class Config:
         orm_mode = True

@@ -1,25 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, FastAPI, HTTPException
 from fastapi_sqlalchemy import DBSessionMiddleware, db
 from starlette.requests import Request
 from starlette.responses import Response
 
-from service.db.database import Base, engine
+from sqlalchemy.orm import Session
+
+from dotenv import load_dotenv
 import uvicorn
 import os
 
+from db.database import Base, engine, SessionLocal # SessionLocal
 from db.schema import User as SchemaUser
-from db.user import User as ModelUser
+from db.schema import UserCreate
 
-from passlib.context import CryptContext
-
-from dotenv import load_dotenv
+from crud import user as user_crud
 
 
+Base.metadata.create_all(bind=engine)
 load_dotenv()
 app = FastAPI()
 app.add_middleware(DBSessionMiddleware,
                    db_url=os.getenv('DATABASE_URI'))
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 '''
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -40,7 +41,13 @@ async def on_app_shutdown():
     """
     await close()
 '''
-
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
 async def home():
@@ -48,17 +55,13 @@ async def home():
     """
     return Response("Hello world")
 
-
-@app.post('/register', response_model=SchemaUser)
-async def register(user: SchemaUser):
-    hashed_pw = pwd_context.hash(user.password)
-    db_user = ModelUser(email=user.email,
-                        name=user.name,
-                        hashed_password=hashed_pw)
-    db.session.add(db_user)
-    db.session.commit()
-    return db_user
+@app.post("/api/register", response_model=SchemaUser)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    exist = user_crud.get_user_by_email(db, email=user.email)
+    if exist:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return user_crud.create_user(db=db, user=user)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, log_level="debug", reload=True, port=8000)
+    uvicorn.run("main:app", log_level="debug", reload=True, port=8000, workers=2)
