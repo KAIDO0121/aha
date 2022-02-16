@@ -2,10 +2,9 @@ from fastapi import FastAPI, Depends, FastAPI, HTTPException
 from fastapi_sqlalchemy import DBSessionMiddleware
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse
+from starlette.responses import Response, RedirectResponse, HTMLResponse
 from starlette.config import Config
 from starlette.middleware.sessions import SessionMiddleware
-
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
 
@@ -50,6 +49,22 @@ if SECRET_KEY is None:
     raise 'Missing SECRET_KEY'
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
+   
+    # Facebook Oauth Config
+FACEBOOK_CLIENT_ID = os.environ.get('FACEBOOK_CLIENT_ID')
+FACEBOOK_CLIENT_SECRET = os.environ.get('FACEBOOK_CLIENT_SECRET')
+oauth.register(
+        name='facebook',
+        client_id=FACEBOOK_CLIENT_ID,
+        client_secret=FACEBOOK_CLIENT_SECRET,
+        access_token_url='https://graph.facebook.com/oauth/access_token',
+        access_token_params=None,
+        authorize_url='https://www.facebook.com/dialog/oauth',
+        authorize_params=None,
+        api_base_url='https://graph.facebook.com/',
+        client_kwargs={'scope': 'email'},
+)
+
 
 '''
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -72,20 +87,12 @@ async def on_app_shutdown():
 '''
 # Dependency
 
-
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-
-@app.get("/")
-async def home():
-    """Home page
-    """
-    return Response("Hello world")
 
 
 @app.post("/api/register", response_model=SchemaUser)
@@ -96,22 +103,66 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return user_crud.create_user(db=db, user=user)
 
 
-@app.route('/login')
+@app.route('/api/oauth/google/register_and_login')
 async def login(request: Request):
-    # This creates the url for the /auth endpoint
-    return await oauth.google.authorize_redirect(request, '/auth')
+    redirect_uri = request.url_for('google_oauth')  
+    return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
-@app.route('/auth')
-async def auth(request: Request):
+@app.route('/api/oauth/google')
+async def google_oauth(request: Request,  db: Session = next(get_db())): # why use next(get_db()) works??
     try:
         access_token = await oauth.google.authorize_access_token(request)
     except OAuthError:
-        return RedirectResponse(url='/')
+        return RedirectResponse(url='/fail')
+    
     user_data = await oauth.google.parse_id_token(request, access_token)
+    exist = user_crud.get_user_by_email(db, email = user_data['email'])
+    if not exist:
+        user_crud.google_oauth_create_user(db = db, user= user_data)
+
     request.session['user'] = dict(user_data)
     return RedirectResponse(url='/')
 
+@app.route('/api/oauth/facebook/register_and_login')
+async def facebook(request: Request):
+    redirect_uri = request.url_for('facebook_oauth')  
+    return oauth.facebook.authorize_redirect(redirect_uri)
+ 
+@app.route('/api/oauth/facebook/')
+async def facebook_oauth(request: Request,  db: Session = next(get_db())):
+    try:
+        access_token = await oauth.facebook.authorize_access_token(request)
+    except OAuthError:
+        return RedirectResponse(url='/fail')
+
+    resp = await oauth.facebook.get(
+        'https://graph.facebook.com/me?fields=id,name,email,picture{url}')
+    profile = resp.json()
+    exist = user_crud.get_user_by_email(db, email = profile['email'])
+    if not exist:
+        user_crud.google_oauth_create_user(db = db, user= profile)
+
+    request.session['user'] = dict(profile)
+    return RedirectResponse(url='/')
+ 
+
+@app.route('/fail')
+def fail(request: Request):
+    return Response("Oauth Fail")
+
+@app.get('/')
+def public(request: Request):
+    user = request.session.get('user')
+    if user:
+        name = user.get('name')
+        return HTMLResponse(f'<p>Hello {name}!</p><a href=/logout>Logout</a>')
+    return HTMLResponse('<a href=/api/oauth/google/register_and_login>Login</a>')
+
+@app.route('/logout')
+async def logout(request: Request):
+    request.session.pop('user', None)
+    return RedirectResponse(url='/')
 
 if __name__ == "__main__":
     uvicorn.run("main:app", log_level="debug",

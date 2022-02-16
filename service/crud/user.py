@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from db.user import User
-from db.schema import UserCreate
+from db.schema import UserCreate, UserBase
 
 from passlib.context import CryptContext
 
@@ -25,6 +25,14 @@ def create_user(db: Session, user: UserCreate):
     db_user = User(email=user.email,
                         name=user.name,
                         hashed_password=hashed_pw)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def google_oauth_create_user(db: Session, user: dict):
+    db_user = User(email=user['email'],
+                        name=user['name'])
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
