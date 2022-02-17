@@ -9,16 +9,15 @@ from fastapi import APIRouter
 from dotenv import load_dotenv
 
 from pydantic import EmailStr, BaseModel
+from itsdangerous import URLSafeTimedSerializer
 
 router = APIRouter()
 load_dotenv()
 conf = ConnectionConfig(
     MAIL_USERNAME=os.getenv('MAIL_USERNAME'),
     MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-    MAIL_FROM=os.getenv('MAIL_FROM'),
     MAIL_PORT=int(os.getenv('MAIL_PORT')),
     MAIL_SERVER=os.getenv('MAIL_SERVER'),
-    MAIL_FROM_NAME=os.getenv('MAIN_FROM_NAME'),
     MAIL_TLS=True,
     MAIL_SSL=False,
     USE_CREDENTIALS=True,
@@ -26,9 +25,21 @@ conf = ConnectionConfig(
 )
 
 
-class EmailSchema(BaseModel):
-    email: List[EmailStr]
-    body: Dict[str, Any]
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(os.getenv('MAIL_SECRET'))
+    return serializer.dumps(email, salt=os.getenv('SECURITY_PASSWORD_SALT'))
+
+def confirm_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(os.getenv('MAIL_SECRET'))
+    try:
+        email = serializer.loads(
+            token,
+            salt=os.getenv('SECURITY_PASSWORD_SALT'),
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
 
 
 async def send_email_async(subject: str, email_to: str, body: dict):
@@ -69,16 +80,17 @@ async def send_email_asynchronous():
                            {'title': 'Hello World', 'name': 'John Doe'})
     return 'Success'
 
-
-@router.post("/email")
-async def send_with_template(email: EmailSchema):
-    print(email)
+@router.get('/api/send_with_template')
+async def send_with_template(user: dict, body: dict):
     message = MessageSchema(
         subject="Fastapi-Mail module",
-        recipients=email.dict().get("email"),
-        template_body=email.dict().get("body"),
+        recipients=[user.get("email")],
+        template_body=body
     )
 
     fm = FastMail(conf)
-    await fm.send_message(message, template_name="email.html")
-    return JSONResponse(status_code=200, content={"message": "email has been sent"})
+    try:
+        await fm.send_message(message, template_name="email.html")
+        return 'Success'
+    except:
+        return False

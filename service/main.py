@@ -1,10 +1,11 @@
 import uvicorn
 import os
-from fastapi import FastAPI, Depends, FastAPI, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi_sqlalchemy import DBSessionMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, HTMLResponse
+from starlette.responses import Response, RedirectResponse, HTMLResponse, JSONResponse
 from starlette.config import Config
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -14,21 +15,35 @@ from sqlalchemy.orm import Session
 
 from dotenv import load_dotenv
 
-from db.database import Base, engine, SessionLocal  # SessionLocal
+from db.database import Base, engine 
 from db.schema import User as SchemaUser
 from db.schema import UserCreate
 
 from crud import user as user_crud
 
-from routers import sendmail
+from utils.utils import get_db
+from utils.jwt import create_token, valid_email_from_db, CREDENTIALS_EXCEPTION
 
+from routers import sendmail, register
 
+ALLOWED_HOSTS = ["*"]
 Base.metadata.create_all(bind=engine)
 load_dotenv()
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_HOSTS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_middleware(DBSessionMiddleware,
                    db_url=os.getenv('DATABASE_URI'))
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL') or 'http://127.0.0.1:7000/token'
 app.include_router(sendmail.router)
+app.include_router(register.router)
 # OAuth settings
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or None
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or None
@@ -46,10 +61,10 @@ oauth.register(
     client_kwargs={'scope': 'openid email profile'},
 )
 
-SECRET_KEY = os.environ.get('SECRET_KEY') or None
-if SECRET_KEY is None:
-    raise 'Missing SECRET_KEY'
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+GOOGLE_SECRET_KEY = os.environ.get('GOOGLE_SECRET_KEY') or None
+if GOOGLE_SECRET_KEY is None:
+    raise 'Missing GOOGLE_SECRET_KEY'
+app.add_middleware(SessionMiddleware, secret_key=GOOGLE_SECRET_KEY)
 
 # Facebook Oauth Config
 FACEBOOK_CLIENT_ID = os.environ.get('FACEBOOK_CLIENT_ID')
@@ -67,44 +82,6 @@ oauth.register(
 )
 
 
-'''
-app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-app.include_router(endpoint_router, prefix=default_route_str)
-
-
-@app.on_event("startup")
-async def on_app_start():
-    """Anything that needs to be done while app starts
-    """
-    await connect()
-
-
-@app.on_event("shutdown")
-async def on_app_shutdown():
-    """Anything that needs to be done while app shutdown
-    """
-    await close()
-'''
-# Dependency
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@app.post("/api/register", response_model=SchemaUser)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    exist = user_crud.get_user_by_email(db, email=user.email)
-    if exist:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return user_crud.create_user(db=db, user=user)
-
-
 @app.route('/api/oauth/google/register_and_login')
 async def login(request: Request):
     redirect_uri = request.url_for('google_oauth')
@@ -117,15 +94,18 @@ async def google_oauth(request: Request,  db: Session = next(get_db())):
     try:
         access_token = await oauth.google.authorize_access_token(request)
     except OAuthError:
-        return RedirectResponse(url='/fail')
+        raise CREDENTIALS_EXCEPTION
 
     user_data = await oauth.google.parse_id_token(request, access_token)
     exist = user_crud.get_user_by_email(db, email=user_data['email'])
     if not exist:
         user_crud.google_oauth_create_user(db=db, user=user_data)
 
-    request.session['user'] = dict(user_data)
-    return RedirectResponse(url='/')
+    if valid_email_from_db(user_data['email']):
+        return JSONResponse({'result': True, 'access_token': create_token(user_data['email'])})
+
+    raise CREDENTIALS_EXCEPTION
+
 
 
 @app.route('/api/oauth/facebook/register_and_login')
