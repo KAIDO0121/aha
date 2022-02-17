@@ -15,14 +15,14 @@ from sqlalchemy.orm import Session
 
 from dotenv import load_dotenv
 
-from db.database import Base, engine 
+from db.database import Base, engine
 from db.schema import User as SchemaUser
 from db.schema import UserCreate
 
 from crud import user as user_crud
 
-from utils.utils import get_db
-from utils.jwt import create_token, valid_email_from_db, CREDENTIALS_EXCEPTION
+from utils.utils import get_db, CREDENTIALS_EXCEPTION
+from utils.auth_bearer import Auth
 
 from routers import sendmail, register
 
@@ -44,6 +44,7 @@ app.add_middleware(DBSessionMiddleware,
 FRONTEND_URL = os.environ.get('FRONTEND_URL') or 'http://127.0.0.1:7000/token'
 app.include_router(sendmail.router)
 app.include_router(register.router)
+auth_handler = Auth()
 # OAuth settings
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or None
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or None
@@ -101,11 +102,9 @@ async def google_oauth(request: Request,  db: Session = next(get_db())):
     if not exist:
         user_crud.google_oauth_create_user(db=db, user=user_data)
 
-    if valid_email_from_db(user_data['email']):
-        return JSONResponse({'result': True, 'access_token': create_token(user_data['email'])})
+        return JSONResponse({'result': True, 'access_token': auth_handler.encode_token(user_data['email'], user_data['name'])})
 
     raise CREDENTIALS_EXCEPTION
-
 
 
 @app.route('/api/oauth/facebook/register_and_login')

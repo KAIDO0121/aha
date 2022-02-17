@@ -1,15 +1,19 @@
 import os
 import pathlib
-from typing import List, Dict, Any
+from urllib.request import Request
 
-from starlette.responses import JSONResponse
-from fastapi import BackgroundTasks
+
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import BackgroundTasks, Security, APIRouter
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-from fastapi import APIRouter
+
 from dotenv import load_dotenv
 
-from pydantic import EmailStr, BaseModel
 from itsdangerous import URLSafeTimedSerializer
+from utils.auth_bearer import Auth
+
+security = HTTPBearer()
+auth_handler = Auth()
 
 router = APIRouter()
 load_dotenv()
@@ -28,6 +32,7 @@ conf = ConnectionConfig(
 def generate_confirmation_token(email):
     serializer = URLSafeTimedSerializer(os.getenv('MAIL_SECRET'))
     return serializer.dumps(email, salt=os.getenv('SECURITY_PASSWORD_SALT'))
+
 
 def confirm_token(token, expiration=3600):
     serializer = URLSafeTimedSerializer(os.getenv('MAIL_SECRET'))
@@ -80,11 +85,38 @@ async def send_email_asynchronous():
                            {'title': 'Hello World', 'name': 'John Doe'})
     return 'Success'
 
-@router.get('/api/send_with_template')
+
 async def send_with_template(user: dict, body: dict):
     message = MessageSchema(
-        subject="Fastapi-Mail module",
+        subject="Verification mail",
         recipients=[user.get("email")],
+        template_body=body
+    )
+
+    fm = FastMail(conf)
+    try:
+        await fm.send_message(message, template_name="email.html")
+        return 'Success'
+    except Exception as e:
+        print(e, 'EEEEEEEEE')
+        return False
+
+
+@router.get('/api/resend_verification_email')
+async def resend_verification_email(credentials: HTTPAuthorizationCredentials = Security(security)):
+    token = credentials.credentials
+    payload = auth_handler.decode_token(token)
+    url = os.getenv('SERVER_URL')
+    confirm_url = f'{url}/api/confirm/{token}'
+
+    body = {
+        "confirm_url": confirm_url,
+        "name": payload['name']
+    }
+
+    message = MessageSchema(
+        subject="Verification mail",
+        recipients=[payload['email']],
         template_body=body
     )
 

@@ -1,5 +1,5 @@
 
-from passlib.context import CryptContext 
+from passlib.context import CryptContext
 import jwt
 import os
 from datetime import datetime, timedelta
@@ -9,8 +9,10 @@ API_SECRET_KEY = os.environ.get('API_SECRET_KEY') or None
 if API_SECRET_KEY is None:
     raise BaseException('Missing API_SECRET_KEY env var.')
 API_ALGORITHM = os.environ.get('API_ALGORITHM') or 'HS256'
-API_ACCESS_TOKEN_EXPIRE_MINUTES = cast_to_number('API_ACCESS_TOKEN_EXPIRE_MINUTES') or 15
-API_REFRESH_TOKEN_EXPIRE_HOURS = cast_to_number('API_REFRESH_TOKEN_EXPIRE_HOURS') or 10
+API_ACCESS_TOKEN_EXPIRE_MINUTES = cast_to_number(
+    'API_ACCESS_TOKEN_EXPIRE_MINUTES') or 15
+API_REFRESH_TOKEN_EXPIRE_HOURS = cast_to_number(
+    'API_REFRESH_TOKEN_EXPIRE_HOURS') or 10
 
 
 '''
@@ -41,8 +43,9 @@ class JWTBearer(HTTPBearer):
         return isTokenValid
 '''
 
+
 class Auth():
-    hasher= CryptContext(schemes=['bcrypt'])
+    hasher = CryptContext(schemes=['bcrypt'])
     secret = API_SECRET_KEY
 
     '''
@@ -53,48 +56,56 @@ class Auth():
         return self.hasher.verify(password, encoded_password)
     '''
 
-    def encode_token(self, username):
+    def encode_token(self, name, email, id):
         payload = {
-            'exp' : datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
-            'iat' : datetime.utcnow(),
-        'scope': 'access_token',
-            'sub' : username
+            'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
+            'iat': datetime.utcnow(),
+            'scope': 'access_token',
+            'name': name,
+            'email': email,
+            'id': id
         }
         return jwt.encode(
-            payload, 
+            payload,
             self.secret,
-            algorithm= API_ALGORITHM
+            algorithm=API_ALGORITHM
         )
 
     def decode_token(self, token):
         try:
-            payload = jwt.decode(token, self.secret, algorithms=[API_ALGORITHM])
+            payload = jwt.decode(token, self.secret,
+                                 algorithms=[API_ALGORITHM])
             if (payload['scope'] == 'access_token'):
-                return payload['sub']   
+                return payload
             raise INVALID_CREDENTIAL_SCHEME
         except jwt.ExpiredSignatureError:
             raise INVALID_OR_EXPIRED_TOKEN
         except jwt.InvalidTokenError:
             raise CREDENTIALS_EXCEPTION
 
-    def encode_refresh_token(self, username):
+    def encode_refresh_token(self, name, email, id):
         payload = {
-            'exp' : datetime.utcnow() + timedelta(days=0, hours=API_REFRESH_TOKEN_EXPIRE_HOURS),
-            'iat' : datetime.utcnow(),
-        'scope': 'refresh_token',
-            'sub' : username
+            'exp': datetime.utcnow() + timedelta(days=0, hours=API_REFRESH_TOKEN_EXPIRE_HOURS),
+            'iat': datetime.utcnow(),
+            'scope': 'refresh_token',
+            'name': name,
+            'email': email,
+            'id': id
         }
         return jwt.encode(
-            payload, 
+            payload,
             self.secret,
-            algorithm= API_ALGORITHM
+            algorithm=API_ALGORITHM
         )
+
     def refresh_token(self, refresh_token):
         try:
-            payload = jwt.decode(refresh_token, self.secret, algorithms=[API_ALGORITHM])
+            payload = jwt.decode(refresh_token, self.secret,
+                                 algorithms=[API_ALGORITHM])
             if (payload['scope'] == 'refresh_token'):
-                username = payload['sub']
-                new_token = self.encode_token(username)
+
+                new_token = self.encode_token(
+                    payload['name'], payload['email'])
                 return new_token
             raise INVALID_CREDENTIAL_SCHEME
         except jwt.ExpiredSignatureError:
