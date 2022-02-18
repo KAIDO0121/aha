@@ -1,7 +1,8 @@
 from fastapi import Request, HTTPException
 from fastapi import status
-from db.database import SessionLocal 
+from db.database import SessionLocal
 import os
+
 
 def get_db():
     db = SessionLocal()
@@ -13,6 +14,7 @@ def get_db():
     finally:
         db.close()
 
+
 def cast_to_number(id):
     temp = os.environ.get(id)
     if temp is not None:
@@ -21,6 +23,7 @@ def cast_to_number(id):
         except ValueError:
             return None
     return None
+
 
 CREDENTIALS_EXCEPTION = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,4 +41,14 @@ INVALID_OR_EXPIRED_TOKEN = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail='Invalid token or expired token.',
     headers={'WWW-Authenticate': 'Bearer'},
+)
+
+USERNAME_NOT_FOUND = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail='User name not found'
+)
+
+WRONG_PASSWORD = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail='Wrong password'
 )

@@ -1,17 +1,15 @@
 from datetime import datetime
 import re
-from pydantic import BaseModel, ValidationError, validator
-class UserBase(BaseModel): # common fields
-    email: str
-    name: str
-
-class UserCreate(UserBase): # fields needed for create only
+from pydantic import BaseModel, validator
+class UserCreate(BaseModel):  # fields needed for create only
     password: str
     password2: str
+    email: str
 
     @validator('password')
     def password_format(cls, pw):
-        find = re.findall(r"(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?]).{8,}$", pw)
+        find = re.findall(
+            r"(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?]).{8,}$", pw)
         if not find:
             raise ValueError('Password must contains...')
         return pw
@@ -21,13 +19,17 @@ class UserCreate(UserBase): # fields needed for create only
         if 'password' in values and v != values['password']:
             raise ValueError('passwords do not match')
         return v
-
-class User(UserBase):# fields needed for read only
+class User(BaseModel):  # fields needed for read only
     id: int
+    email: str
     create_time: datetime
-
     class Config:
         orm_mode = True
+
+class UserLogin(BaseModel): # fields for login request and response
+    password: str
+    email: str
+
 
 '''
 contains at least one lower character 
@@ -36,4 +38,3 @@ contains at least one digit character
 contains at least one special character
 contains at least 8 characters
 '''
-

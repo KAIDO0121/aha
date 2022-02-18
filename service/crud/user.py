@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from db.user import User
-from db.schema import UserCreate, UserBase
+from db.schema import UserCreate
 
 from passlib.context import CryptContext
 
@@ -22,21 +22,22 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 def create_user(db: Session, user: UserCreate):
     hashed_pw = pwd_context.hash(user.password)
     db_user = User(email=user.email,
-                        name=user.name,
-                        hashed_password=hashed_pw)
+                   hashed_password=hashed_pw)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
+
 def google_oauth_create_user(db: Session, user: dict):
     db_user = User(email=user['email'],
-                        name=user['name'])
+                   name=user['name'])
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
-    
+
+
 '''
 add that instance object to your database session.
 commit the changes to the database (so that they are saved).
