@@ -39,6 +39,8 @@
           if (xhr.readyState == 4 && xhr.status == 200)
           {
             location.replace(`${location.origin}/dashboard`)
+          }else{
+            alert(xhr.responseText)
           }
       }
 

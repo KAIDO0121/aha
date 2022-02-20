@@ -1,32 +1,17 @@
-<p>Dashboard</p>
+<p>Profile</p>
 
-{% if not verified %}
-    <button>
-        <a href="/api/send_with_template">
-            Resend Email Verification
-        </a>
-    </button>
+{% if name %}
+    <p>Your name is {{ name }}</p>
+    <form action="{{ server_url }}/api/editname" method="post" id="myForm">
+        <label for="name">You can edit your name here</label>  
+        <p><input id="name" name="name" value="" placeholder="Input your new name"></p>
+        <p><input type="submit" value="Submit form"></p>
+        
+      </form>
     
 {% endif %}
 
-<button>
-    <a href="/profile">
-        Profile
-    </a>
-</button>
-
-{% if not name %}
-<form action="{{ server_url }}/api/resetpassword" method="post" id="myForm">
-    <label for="email">Please fill in your email and password</label>  
-    <p><input id="oldpw" name="oldpw" value="" type="password" placeholder="Old password"></p>
-    <p><input id="password" type="password" 
-      name="password" value="" placeholder="New password"></p>
-    <p><input id="password2" type="password" 
-      name="password2" value="" placeholder="Confirm your New password"></p>
-    <p><input type="submit" value="Submit form"></p>
-    
-  </form>
-{% endif %}
+<button><a href='/api/logout'>Log out</a></button>
 
 
 <script>

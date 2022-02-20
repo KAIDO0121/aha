@@ -4,7 +4,7 @@ from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 import os
 from sqlalchemy.orm import Session
 
@@ -24,7 +24,9 @@ auth_handler = Auth()
 router = APIRouter()
 
 
-TEMPLATES = Jinja2Templates(directory=f'{pathlib.Path(__file__).parent.resolve()}/templates')
+TEMPLATES = Jinja2Templates(
+    directory=f'{pathlib.Path(__file__).parent.resolve()}/templates')
+
 
 @router.post("/api/login")
 def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db)):
@@ -34,12 +36,21 @@ def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db))
         raise USERNAME_NOT_FOUND
     if not pwd_context.verify(user.password, exist.hashed_password):
         raise WRONG_PASSWORD
-    token = auth_handler.encode_token( exist.email, exist.id)
-    request.session['access_token'] = token
-    return JSONResponse(status_code=200, content={ 'msg':'success'})
+    user_crud.update_user_logs(db, exist)
+
+    access_token = auth_handler.encode_token(exist.email, exist.id)
+    refresh_token = auth_handler.encode_refresh_token(exist.email, exist.id)
+    request.session['access_token'] = access_token
+    request.session['refresh_token'] = refresh_token
+    return JSONResponse(status_code=200, content={'msg': 'success'})
+
 
 @router.route("/signin")
-def login_user(request: Request):
+def signin(request: Request):
+    access_token = request.session.get('access_token')
+    if access_token and auth_handler.decode_token(access_token):
+        return RedirectResponse('/dashboard')
+
     return TEMPLATES.TemplateResponse(
         "signin.html",
         {"request": request}

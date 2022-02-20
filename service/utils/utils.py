@@ -15,8 +15,8 @@ def get_db():
         db.close()
 
 
-def cast_to_number(id):
-    temp = os.environ.get(id)
+def cast_to_number(_id):
+    temp = os.environ.get(_id)
     if temp is not None:
         try:
             return float(temp)

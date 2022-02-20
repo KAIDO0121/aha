@@ -17,13 +17,10 @@ from dotenv import load_dotenv
 
 from db.database import Base, engine
 from db.schema import User as SchemaUser
-from db.schema import UserCreate
-
-from crud import user as user_crud
 
 from utils.auth_bearer import Auth
 
-from routers import sendmail, register, login, oauth
+from routers import sendmail, signup, signin, oauth, profile, dashboard, userdb_dashboard
 
 ALLOWED_HOSTS = ["*"]
 Base.metadata.create_all(bind=engine)
@@ -40,24 +37,34 @@ app.add_middleware(
 app.add_middleware(DBSessionMiddleware,
                    db_url=os.getenv('DATABASE_URI'))
 SESSION_SECRET = os.getenv('SESSION_SECRET')
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET, https_only=True)
+app.add_middleware(SessionMiddleware,
+                   secret_key=SESSION_SECRET, https_only=True)
 app.include_router(sendmail.router)
-app.include_router(register.router)
-app.include_router(login.router)
+app.include_router(signup.router)
+app.include_router(signin.router)
 app.include_router(oauth.router)
+app.include_router(profile.router)
+app.include_router(dashboard.router)
+app.include_router(userdb_dashboard.router)
 
 auth_handler = Auth()
 
 
+@app.get('/refresh_token')
+def refresh(request: Request):
+    paylod = auth_handler.decode_token(request.session.get('access_token'))
+    refresh_token = request.session.get('refresh_token')
+    new_token = auth_handler.refresh_token(refresh_token)
+    return {'access_token': new_token}
+
+
 @app.route('/landing')
 def public(request: Request):
+    access_token = request.session.get('access_token')
+    if access_token and auth_handler.decode_token(access_token):
+        return RedirectResponse('/dashboard')
     return HTMLResponse(f"<a href='/signup'><button>Sign Up</button></a>  <a href='/signin'><button>Sign In</button></a>")
 
-
-@app.route('/logout')
-async def logout(request: Request):
-    request.session.pop('access_token', None)
-    return RedirectResponse(url='/')
 
 if __name__ == "__main__":
     uvicorn.run("main:app", log_level="debug",

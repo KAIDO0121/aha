@@ -48,21 +48,13 @@ class Auth():
     hasher = CryptContext(schemes=['bcrypt'])
     secret = API_SECRET_KEY
 
-    '''
-    def encode_password(self, password):
-        return self.hasher.hash(password)
-
-    def verify_password(self, password, encoded_password):
-        return self.hasher.verify(password, encoded_password)
-    '''
-
-    def encode_token(self, email, id):
+    def encode_token(self, email, _id):
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),
             'scope': 'access_token',
             'email': email,
-            'id': id
+            'id': _id
         }
         return jwt.encode(
             payload,
@@ -82,13 +74,13 @@ class Auth():
         except jwt.InvalidTokenError:
             raise CREDENTIALS_EXCEPTION
 
-    def encode_refresh_token(self, email, id):
+    def encode_refresh_token(self, email, _id):
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, hours=API_REFRESH_TOKEN_EXPIRE_HOURS),
             'iat': datetime.utcnow(),
             'scope': 'refresh_token',
             'email': email,
-            'id': id
+            'id': _id
         }
         return jwt.encode(
             payload,

@@ -5,7 +5,6 @@ from fastapi.templating import Jinja2Templates
 
 from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse, HTMLResponse, JSONResponse
-from starlette.config import Config
 
 from sqlalchemy.orm import Session
 
@@ -25,7 +24,9 @@ security = HTTPBearer()
 auth_handler = Auth()
 router = APIRouter()
 
-TEMPLATES = Jinja2Templates(directory=f'{pathlib.Path(__file__).parent.resolve()}/templates')
+TEMPLATES = Jinja2Templates(
+    directory=f'{pathlib.Path(__file__).parent.resolve()}/templates')
+
 
 @router.route("/api/confirm/{token}")
 def confirm_email(request: Request):
@@ -54,15 +55,18 @@ def confirm_email(request: Request):
 
 @router.post("/api/register", response_model=SchemaUser)
 async def create_user(user: UserCreate, request: Request, db: Session = Depends(get_db)):
-    
+
     exist = user_crud.get_user_by_email(db, email=user.email)
     if exist:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    new_user = user_crud.create_user(db=db, user=user)
-    token = auth_handler.encode_token( new_user.email, new_user.id)
 
-    confirm_url = request.url_for('confirm_email', token=token)
+    new_user = user_crud.create_user(db=db, user=user)
+    user_crud.update_user_logs(db, new_user)
+    access_token = auth_handler.encode_token(new_user.email, new_user.id)
+    refresh_token = auth_handler.encode_refresh_token(
+        new_user.email, new_user.id)
+
+    confirm_url = request.url_for('confirm_email', token=access_token)
 
     body = {
         "confirm_url": confirm_url,
@@ -70,22 +74,18 @@ async def create_user(user: UserCreate, request: Request, db: Session = Depends(
     }
 
     res = await send_with_template(user.dict(), body)
-    request.session['access_token'] = token
+    request.session['access_token'] = access_token
+    request.session['refresh_token'] = refresh_token
     request.session['verified'] = False
-    return JSONResponse(status_code=200, content={ 'msg':'success'})
+    return JSONResponse(status_code=200, content={'msg': 'success'})
 
-
-@router.route("/dashboard")
-def dashboard(request: Request ):
-    print(request.session)
-    email = auth_handler.decode_token(request.session.get('access_token'))
-    verified = request.session.get('verified')
-    if not verified :
-        return HTMLResponse(f'<p>This the dashboard</p><a href="/api/send_with_template">Resend Email Verification</a>')
-    return HTMLResponse(f'<p>This the dashboard</p>')
 
 @router.route("/signup")
 def signup(request: Request):
+    access_token = request.session.get('access_token')
+    if access_token and auth_handler.decode_token(access_token):
+        return RedirectResponse('/dashboard')
+
     return TEMPLATES.TemplateResponse(
         "signup.html",
         {"request": request}
