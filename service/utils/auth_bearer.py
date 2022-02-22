@@ -48,7 +48,8 @@ class Auth():
     hasher = CryptContext(schemes=['bcrypt'])
     secret = API_SECRET_KEY
 
-    def encode_token(self, email, _id):
+    def encode_token(self, email, _id, name = None):
+        
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),
@@ -56,6 +57,9 @@ class Auth():
             'email': email,
             'id': _id
         }
+        if name :
+            payload['name'] = name
+
         return jwt.encode(
             payload,
             self.secret,
@@ -93,9 +97,14 @@ class Auth():
             payload = jwt.decode(refresh_token, self.secret,
                                  algorithms=[API_ALGORITHM])
             if (payload['scope'] == 'refresh_token'):
+                if payload['name']:
 
-                new_token = self.encode_token(
-                    payload['email'], payload['id'])
+                    new_token = self.encode_token(
+                        payload['email'], payload['id'], payload['name'])
+                else:
+                    
+                    new_token = self.encode_token(
+                        payload['email'], payload['id'])
                 return new_token
             raise INVALID_CREDENTIAL_SCHEME
         except jwt.ExpiredSignatureError:

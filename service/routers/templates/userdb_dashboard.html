@@ -1,1 +1,20 @@
-<p>Dashboard</p>
+<p>User DB Dashboard</p>
+
+<h4><b>User list</b></h4>
+
+<table>
+    <tr>
+        <td>UserID</td>
+        <td>Sign up timestamp</td>
+        <td>Number of times logged in</td>
+        <td>Last session timestamp</td>
+    </tr>
+    {% for user in users %}
+        <tr>
+            <td>{{ user["userid"] }}</td>
+            <td>{{ user["signuptime"] }}</td>
+            <td>{{ user["logintimes"] }}</td>
+            <td>{{ user["lastlogin"] }}</td>
+        </tr>
+    {% endfor %}
+</table>

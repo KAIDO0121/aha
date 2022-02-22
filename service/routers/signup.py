@@ -44,7 +44,6 @@ def confirm_email(request: Request):
     else:
         user.email_verified = True
         db.commit()
-        db.refresh(user)
         request.session['verified'] = True
         request.session['access_token'] = request.path_params['token']
         return RedirectResponse(

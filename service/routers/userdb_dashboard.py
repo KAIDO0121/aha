@@ -8,6 +8,9 @@ from starlette.responses import JSONResponse
 
 from sqlalchemy.orm import Session
 
+from collections import namedtuple
+
+from datetime import datetime
 
 from crud import user as user_crud
 from utils.utils import get_db
@@ -28,8 +31,18 @@ TEMPLATES = Jinja2Templates(
 @router.route("/userdb_dashboard")
 def userdb_dashboard(request: Request, db: Session = next(get_db())):
     auth_handler.decode_token(request.session.get('access_token'))
-    users = user_crud.get_users(db)
-    print(users)
+    Record = namedtuple("Record", ["userid", "signuptime", "logintimes", "lastlogin"])
+
+    _users = user_crud.get_users(db)
+    # .strftime("%Y-%m-%d, %H:%M:%S")
+    users = []
+    for user in _users:
+        obj = Record(*user)._asdict()
+
+        obj['signuptime'] = obj['signuptime'].strftime("%Y-%m-%d, %H:%M:%S")
+        obj['lastlogin']  = obj['lastlogin'].strftime("%Y-%m-%d, %H:%M:%S")
+        users.append(obj)
+
     return TEMPLATES.TemplateResponse(
         "userdb_dashboard.html",
         {"request": request, "users": users}
