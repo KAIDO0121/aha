@@ -18,3 +18,16 @@
         </tr>
     {% endfor %}
 </table>
+
+<table>
+    <tr>
+        <td>Signed up counts</td>
+        <td>Active sessions today</td>
+        <td>Average active user per day</td>
+    </tr>
+        <tr>
+            <td>{{ signup_count }}</td>
+            <td>{{ today_session }}</td>
+            <td>{{ avg_per_day }}</td>
+        </tr>
+</table>
