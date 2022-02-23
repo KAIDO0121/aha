@@ -28,6 +28,7 @@ def reset_user_pw(db: Session, user: User, newpassword: str):
 
 
 def get_user(db: Session, user_id: int):
+    print(user_id)
     return db.query(User).filter(User.id == user_id).first()
 
 
@@ -43,12 +44,12 @@ def get_user_by_fb_id(db: Session, fb_id: int):
     return db.query(User).filter(User.facebook_id == fb_id).first()
 
 
-def get_average_session_user_per_day(db: Session, interval = 7):
+def get_average_session_user_per_day(db: Session, interval=7):
     today = datetime.date.today()
     week = today - datetime.timedelta(days=7)
     user_count = db.execute("select count(users.id) from users where last_login_time > :week and last_login_time < :today", {
-                'week': week, 'today': today}).fetchone()[0]
- 
+        'week': week, 'today': today}).fetchone()[0]
+
     return user_count / interval
 
 

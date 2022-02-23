@@ -11,7 +11,6 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
 
-from sqlalchemy.orm import Session
 
 from dotenv import load_dotenv
 
@@ -50,12 +49,13 @@ app.include_router(userdb_dashboard.router)
 auth_handler = Auth()
 
 
-@app.get('/refresh_token')
+@app.get('/api/refresh_token')
 def refresh(request: Request):
-    paylod = auth_handler.decode_token(request.session.get('access_token'))
+    auth_handler.decode_token(request.session.get('access_token'))
     refresh_token = request.session.get('refresh_token')
     new_token = auth_handler.refresh_token(refresh_token)
-    return {'access_token': new_token}
+    request.session['access_token'] = new_token
+    return JSONResponse(status_code=200, content={'msg': 'Access token updated'})
 
 
 @app.route('/landing')

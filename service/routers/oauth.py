@@ -53,10 +53,9 @@ class GoogleOAuth:
 
             user_data = await oauth.google.parse_id_token(request, access_token)
 
-            
             exist = user_crud.get_user_by_email(db, email=user_data['email'])
             userid = None
-            if exist: 
+            if exist:
                 userid = exist.id
                 if not exist.google_id:
                     exist.google_id = user_data['sub']
@@ -64,6 +63,7 @@ class GoogleOAuth:
             else:
                 newuser = user_crud.oauth_create_user(
                     db=db, user=user_data, google_id=user_data['sub'])
+                userid = newuser.id
                 user_crud.update_user_logs(db, newuser)
 
             token = auth_handler.encode_token(user_data['email'], userid)
@@ -121,8 +121,9 @@ class FacebookOAuth:
             else:
                 newuser = user_crud.oauth_create_user(
                     db=db, user=profile, facebook_id=profile['id'])
+                userid = newuser.id
                 user_crud.update_user_logs(db, newuser)
-            
+
             token = auth_handler.encode_token(profile['email'], userid)
             request.session['access_token'] = token
             request.session['verified'] = True

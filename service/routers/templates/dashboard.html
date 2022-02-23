@@ -1,71 +1,64 @@
 <p>Dashboard</p>
 
-{% if not verified %}
-    <button>
-        <a href="/api/send_with_template">
-            Resend Email Verification
-        </a>
-    </button>
-    
-{% endif %}
-
 <button>
-    <a href="/profile">
-        Profile
-    </a>
+  <a href="/profile">
+      Profile
+  </a>
 </button>
 
 {% if not name %}
 <form action="{{ server_url }}/api/resetpassword" method="post" id="myForm">
-    <label for="email">Please fill in your email and password</label>  
-    <p><input id="oldpw" name="oldpw" value="" type="password" placeholder="Old password"></p>
-    <p><input id="password" type="password" 
-      name="password" value="" placeholder="New password"></p>
-    <p><input id="password2" type="password" 
-      name="password2" value="" placeholder="Confirm your New password"></p>
-    <p><input type="submit" value="Submit form"></p>
-    
-  </form>
+  <label for="email">Please fill in your email and password</label>  
+  <p><input id="oldpw" name="oldpw" value="" type="password" placeholder="Old password"></p>
+  <p><input id="password" type="password" 
+    name="password" value="" placeholder="New password"></p>
+  <p><input id="password2" type="password" 
+    name="password2" value="" placeholder="Confirm your New password"></p>
+  <p><input type="submit" value="Submit form"></p>
+  
+</form>
 {% endif %}
 
 
 <script>
-    window.addEventListener( "load", function () {
-    function sendData() {
-      var data = {};
-      for (var i = 0, ii = form.length; i < ii; ++i) {
-        var input = form[i];
-        if (input.name) {
-          data[input.name] = input.value;
-        }
+  window.addEventListener( "load", function () {
+  function sendData() {
+    var data = {};
+    for (var i = 0, ii = form.length; i < ii; ++i) {
+      var input = form[i];
+      if (input.name) {
+        data[input.name] = input.value;
       }
-
-      var xhr = new XMLHttpRequest();
-      xhr.open(form.method, form.action, true);
-      xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-
-      xhr.send(JSON.stringify(data));
-
-      xhr.onreadystatechange = function()
-      {
-          if (xhr.readyState == 4 && xhr.status == 200)
-          {
-            location.reload
-          } else{
-            alert(xhr.responseText)
-          }
-      }
-
     }
-    const form = document.getElementById( "myForm" );
-  
-    form.addEventListener( "submit", function ( event ) {
-      event.preventDefault();
-  
-      sendData();
-    } );
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(form.method, form.action, true);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+    xhr.send(JSON.stringify(data));
+
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState == 4 && xhr.status == 200)
+        {
+          location.reload
+        } else{
+          alert(xhr.responseText)
+        }
+    }
+
+  }
+  const form = document.getElementById( "myForm" );
+
+  form.addEventListener( "submit", function ( event ) {
+    event.preventDefault();
+
+    sendData();
   } );
+} );
 </script>
+
+{% endif %}
 
 
  

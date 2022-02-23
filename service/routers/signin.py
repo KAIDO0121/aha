@@ -31,7 +31,11 @@ TEMPLATES = Jinja2Templates(
 @router.post("/api/login")
 def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db)):
     exist = user_crud.get_user_by_email(db, email=user.email)
-
+    #
+    #
+    #
+    #
+    #
     if not exist:
         raise USERNAME_NOT_FOUND
     if not pwd_context.verify(user.password, exist.hashed_password):

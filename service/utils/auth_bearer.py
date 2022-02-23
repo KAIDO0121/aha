@@ -48,8 +48,8 @@ class Auth():
     hasher = CryptContext(schemes=['bcrypt'])
     secret = API_SECRET_KEY
 
-    def encode_token(self, email, _id, name = None):
-        
+    def encode_token(self, email, _id, name=None):
+
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),
@@ -57,7 +57,7 @@ class Auth():
             'email': email,
             'id': _id
         }
-        if name :
+        if name:
             payload['name'] = name
 
         return jwt.encode(
@@ -70,6 +70,7 @@ class Auth():
         try:
             payload = jwt.decode(token, self.secret,
                                  algorithms=[API_ALGORITHM])
+            print(payload)
             if (payload['scope'] == 'access_token'):
                 return payload
             raise INVALID_CREDENTIAL_SCHEME
@@ -86,6 +87,7 @@ class Auth():
             'email': email,
             'id': _id
         }
+
         return jwt.encode(
             payload,
             self.secret,
@@ -102,7 +104,7 @@ class Auth():
                     new_token = self.encode_token(
                         payload['email'], payload['id'], payload['name'])
                 else:
-                    
+
                     new_token = self.encode_token(
                         payload['email'], payload['id'])
                 return new_token

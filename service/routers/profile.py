@@ -32,7 +32,6 @@ TEMPLATES = Jinja2Templates(
 
 @router.route("/api/logout")
 def logout(request: Request):
-    # 有token的時候才logout 沒token的時候直接return
     access_token = request.session.get('access_token')
     if not access_token or not auth_handler.decode_token(access_token):
         raise CREDENTIALS_EXCEPTION
@@ -50,7 +49,9 @@ def editname(user: UserEditName, request: Request, db: Session = Depends(get_db)
 @router.route("/profile")
 def profile(request: Request):
     payload = auth_handler.decode_token(request.session.get('access_token'))
+    print(payload)
     user = user_crud.get_user(next(get_db()), payload['id'])
+
     server_url = os.getenv('SERVER_URL')
     return TEMPLATES.TemplateResponse(
         "profile.html",

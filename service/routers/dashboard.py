@@ -4,11 +4,10 @@ from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 
 from sqlalchemy.orm import Session
 
-from db.schema import User as SchemaUser
 from db.schema import UserResetPassWord
 
 from crud.user import pwd_context
@@ -33,10 +32,21 @@ def dashboard(request: Request):
     payload = auth_handler.decode_token(request.session.get('access_token'))
 
     verified = request.session.get('verified')
-
+    if not verified:
+        return RedirectResponse('/resend_page')
     return TEMPLATES.TemplateResponse(
         "dashboard.html",
         {"request": request, "verified": verified, "name": payload.get('name')}
+    )
+
+
+@router.route("/resend_page")
+def resend_page(request: Request):
+    auth_handler.decode_token(request.session.get('access_token'))
+
+    return TEMPLATES.TemplateResponse(
+        "resend.html",
+        {"request": request}
     )
 
 

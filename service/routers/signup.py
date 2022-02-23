@@ -47,14 +47,13 @@ def confirm_email(request: Request):
         request.session['verified'] = True
         request.session['access_token'] = request.path_params['token']
         return RedirectResponse(
-            url=router.url_path_for('dashboard'),
+            url='/dashboard',
             status_code=status.HTTP_302_FOUND
         )
 
 
 @router.post("/api/register", response_model=SchemaUser)
 async def create_user(user: UserCreate, request: Request, db: Session = Depends(get_db)):
-
     exist = user_crud.get_user_by_email(db, email=user.email)
     if exist:
         raise HTTPException(status_code=400, detail="Email already registered")
