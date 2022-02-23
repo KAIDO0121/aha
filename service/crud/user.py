@@ -42,14 +42,14 @@ def get_user_by_google_id(db: Session, google_id: int):
 def get_user_by_fb_id(db: Session, fb_id: int):
     return db.query(User).filter(User.facebook_id == fb_id).first()
 
-# 過去七天平均活躍使用者數量
 
-
-def get_average_session_user_per_day(db: Session):
-    week = datetime.date.today() - datetime.timedelta(days=7)
-    avg = db.execute("select avg(counts) from (select count(users.id) as counts from users where last_login_time > :week group by date_trunc('day', last_login_time) )as counts", {
-                     'week': week})
-    return avg
+def get_average_session_user_per_day(db: Session, interval = 7):
+    today = datetime.date.today()
+    week = today - datetime.timedelta(days=7)
+    user_count = db.execute("select count(users.id) from users where last_login_time > :week and last_login_time < :today", {
+                'week': week, 'today': today}).fetchone()[0]
+ 
+    return user_count / interval
 
 
 def get_today_session_users(db: Session):
@@ -80,12 +80,14 @@ def oauth_create_user(db: Session, user: dict, **kwargs):
         db_user = User(email=user['email'],
                        google_id=_id,
                        name=user['name'],
-                       login_times=0
+                       login_times=0,
+                       email_verified=True
                        )
     else:
         db_user = User(email=user['email'],
                        facebook_id=kwargs.get('facebook_id'),
                        name=user['name'],
+                       email_verified=True,
                        login_times=0)
     db.add(db_user)
     db.commit()

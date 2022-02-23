@@ -54,5 +54,5 @@ def profile(request: Request):
     server_url = os.getenv('SERVER_URL')
     return TEMPLATES.TemplateResponse(
         "profile.html",
-        {"request": request, "name": user.name, "server_url": server_url}
+        {"request": request, "name": user.name if user else "", "server_url": server_url}
     )

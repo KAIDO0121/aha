@@ -38,9 +38,6 @@ def userdb_dashboard(request: Request, db: Session = next(get_db())):
     today_session = user_crud.get_today_session_users(db)
     avg_per_day = user_crud.get_average_session_user_per_day(db)
 
-    _R = namedtuple('Record', avg_per_day.keys())
-    _r = [_R(*r)._asdict() for r in avg_per_day.fetchall()]
-
     users = []
     for user in _users:
         obj = Record(*user)._asdict()
@@ -53,5 +50,5 @@ def userdb_dashboard(request: Request, db: Session = next(get_db())):
         "userdb_dashboard.html",
         {"request": request, "users": users,
          "signup_count": len(
-             _users), "today_session": today_session, "avg_per_day": _r}
+             _users), "today_session": today_session, "avg_per_day": avg_per_day}
     )
