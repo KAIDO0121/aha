@@ -49,7 +49,6 @@ def editname(user: UserEditName, request: Request, db: Session = Depends(get_db)
 @router.route("/profile")
 def profile(request: Request):
     payload = auth_handler.decode_token(request.session.get('access_token'))
-    print(payload)
     user = user_crud.get_user(next(get_db()), payload['id'])
 
     server_url = os.getenv('SERVER_URL')

@@ -49,7 +49,6 @@ class Auth():
     secret = API_SECRET_KEY
 
     def encode_token(self, email, _id, name=None):
-
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),
@@ -70,7 +69,6 @@ class Auth():
         try:
             payload = jwt.decode(token, self.secret,
                                  algorithms=[API_ALGORITHM])
-            print(payload)
             if (payload['scope'] == 'access_token'):
                 return payload
             raise INVALID_CREDENTIAL_SCHEME
@@ -99,14 +97,8 @@ class Auth():
             payload = jwt.decode(refresh_token, self.secret,
                                  algorithms=[API_ALGORITHM])
             if (payload['scope'] == 'refresh_token'):
-                if payload['name']:
-
-                    new_token = self.encode_token(
-                        payload['email'], payload['id'], payload['name'])
-                else:
-
-                    new_token = self.encode_token(
-                        payload['email'], payload['id'])
+                new_token = self.encode_token(
+                    payload['email'], payload['id'], payload.get("name"))
                 return new_token
             raise INVALID_CREDENTIAL_SCHEME
         except jwt.ExpiredSignatureError:

@@ -28,7 +28,6 @@ def reset_user_pw(db: Session, user: User, newpassword: str):
 
 
 def get_user(db: Session, user_id: int):
-    print(user_id)
     return db.query(User).filter(User.id == user_id).first()
 
 

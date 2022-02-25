@@ -67,6 +67,8 @@ class GoogleOAuth:
                 user_crud.update_user_logs(db, newuser)
 
             token = auth_handler.encode_token(user_data['email'], userid)
+            refresh_token = auth_handler.encode_refresh_token(user_data['email'], userid)
+            request.session['refresh_token'] = refresh_token
             request.session['access_token'] = token
             request.session['verified'] = True
             return RedirectResponse('/dashboard')
@@ -125,6 +127,8 @@ class FacebookOAuth:
                 user_crud.update_user_logs(db, newuser)
 
             token = auth_handler.encode_token(profile['email'], userid)
+            refresh_token = auth_handler.encode_refresh_token(profile['email'], userid)
+            request.session['refresh_token'] = refresh_token
             request.session['access_token'] = token
             request.session['verified'] = True
             return RedirectResponse('/dashboard')

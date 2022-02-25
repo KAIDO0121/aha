@@ -51,8 +51,9 @@ auth_handler = Auth()
 
 @app.get('/api/refresh_token')
 def refresh(request: Request):
-    auth_handler.decode_token(request.session.get('access_token'))
+    #auth_handler.decode_token(request.session.get('access_token'))
     refresh_token = request.session.get('refresh_token')
+    print(refresh_token)
     new_token = auth_handler.refresh_token(refresh_token)
     request.session['access_token'] = new_token
     return JSONResponse(status_code=200, content={'msg': 'Access token updated'})
