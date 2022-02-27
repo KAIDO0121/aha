@@ -8,8 +8,8 @@ from starlette.responses import RedirectResponse, JSONResponse
 
 from sqlalchemy.orm import Session
 
-from db.schema import User as SchemaUser
-from db.schema import UserCreate
+from service.db.schema import User as SchemaUser
+from service.db.schema import UserCreate
 
 from service.crud import user as user_crud
 from service.utils.utils import get_db, EMAIL_EXISTS

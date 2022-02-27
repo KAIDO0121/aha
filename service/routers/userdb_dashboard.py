@@ -8,12 +8,12 @@ from sqlalchemy.orm import Session
 
 from collections import namedtuple
 
-from crud import user as user_crud
-from utils.utils import get_db
+from service.crud import user as user_crud
+from service.utils.utils import get_db
 
 import pathlib
 
-from utils.auth_bearer import Auth
+from service.utils.auth_bearer import Auth
 
 auth_handler = Auth()
 router = APIRouter()
