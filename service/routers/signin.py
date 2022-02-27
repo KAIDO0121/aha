@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse, RedirectResponse
 import os
 from sqlalchemy.orm import Session
 
-from db.schema import UserLogin
+from service.db.schema import UserLogin
 
 from service.crud import user as user_crud
 from service.utils.utils import get_db, USERNAME_NOT_FOUND, WRONG_PASSWORD
