@@ -10,7 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from dotenv import load_dotenv
 
-from db.database import Base, engine
+from service.db.database import Base, engine
 
 from utils.auth_bearer import Auth
 
