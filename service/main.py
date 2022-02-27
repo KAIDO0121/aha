@@ -12,9 +12,9 @@ from dotenv import load_dotenv
 
 from service.db.database import Base, engine
 
-from utils.auth_bearer import Auth
+from service.utils.auth_bearer import Auth
 
-from routers import sendmail, signup, signin, oauth, profile, dashboard, userdb_dashboard
+from service.routers import sendmail, signup, signin, oauth, profile, dashboard, userdb_dashboard
 
 ALLOWED_HOSTS = ["*"]
 Base.metadata.create_all(bind=engine)
