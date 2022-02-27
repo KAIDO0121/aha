@@ -29,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(DBSessionMiddleware,
-                   db_url=os.getenv('DATABASE_URI'))
+                   db_url=os.getenv('DATABASE_URL'))
 SESSION_SECRET = os.getenv('SESSION_SECRET')
 app.add_middleware(SessionMiddleware,
                    secret_key=SESSION_SECRET, https_only=True)
@@ -61,6 +61,7 @@ def public(request: Request):
     return HTMLResponse("<a href='/signup'><button>Sign Up</button></a>  <a href='/signin'><button>Sign In</button></a>")
 
 
+# for dev server you will need ssl_keyfile="./key.pem" ssl_certfile="./cert.pem"
 if __name__ == "__main__":
     uvicorn.run("main:app", log_level="debug",
                 reload=True, port=8000, workers=2,
