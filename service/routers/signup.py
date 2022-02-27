@@ -1,10 +1,10 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, HTMLResponse, JSONResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,7 @@ from db.schema import User as SchemaUser
 from db.schema import UserCreate
 
 from crud import user as user_crud
-from utils.utils import get_db
+from utils.utils import get_db, EMAIL_EXISTS
 
 from routers.sendmail import send_with_template
 
@@ -20,7 +20,6 @@ import pathlib
 
 from utils.auth_bearer import Auth
 
-security = HTTPBearer()
 auth_handler = Auth()
 router = APIRouter()
 
@@ -45,7 +44,6 @@ def confirm_email(request: Request):
         user.email_verified = True
         db.commit()
         request.session['verified'] = True
-        request.session['access_token'] = request.path_params['token']
         return RedirectResponse(
             url='/dashboard',
             status_code=status.HTTP_302_FOUND
@@ -55,10 +53,12 @@ def confirm_email(request: Request):
 @router.post("/api/register", response_model=SchemaUser)
 async def create_user(user: UserCreate, request: Request, db: Session = Depends(get_db)):
     exist = user_crud.get_user_by_email(db, email=user.email)
-    if exist:
-        raise HTTPException(status_code=400, detail="Email already registered")
+
+    if exist and not exist.facebook_id and not exist.google_id:
+        raise EMAIL_EXISTS
 
     new_user = user_crud.create_user(db=db, user=user)
+
     user_crud.update_user_logs(db, new_user)
     access_token = auth_handler.encode_token(new_user.email, new_user.id)
     refresh_token = auth_handler.encode_refresh_token(

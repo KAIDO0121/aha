@@ -2,9 +2,8 @@ import os
 import pathlib
 from urllib.request import Request
 
-
 from fastapi.security import HTTPBearer
-from fastapi import BackgroundTasks, Security, APIRouter
+from fastapi import APIRouter
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
 from starlette.responses import JSONResponse
@@ -13,7 +12,6 @@ from dotenv import load_dotenv
 
 from utils.auth_bearer import Auth
 
-security = HTTPBearer()
 auth_handler = Auth()
 
 router = APIRouter()

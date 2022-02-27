@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 
@@ -8,7 +8,6 @@ from starlette.responses import JSONResponse, RedirectResponse
 import os
 from sqlalchemy.orm import Session
 
-from db.schema import User as SchemaUser
 from db.schema import UserLogin
 
 from crud import user as user_crud
@@ -19,7 +18,6 @@ from crud.user import pwd_context
 
 import pathlib
 
-security = HTTPBearer()
 auth_handler = Auth()
 router = APIRouter()
 
@@ -41,6 +39,7 @@ def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db))
     refresh_token = auth_handler.encode_refresh_token(exist.email, exist.id)
     request.session['access_token'] = access_token
     request.session['refresh_token'] = refresh_token
+    request.session['verified'] = exist.email_verified
     return JSONResponse(status_code=200, content={'msg': 'success'})
 
 

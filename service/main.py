@@ -1,21 +1,16 @@
 import uvicorn
 import os
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI
 from fastapi_sqlalchemy import DBSessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, HTMLResponse, JSONResponse
-from starlette.config import Config
+from starlette.responses import RedirectResponse, HTMLResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
-
-from authlib.integrations.starlette_client import OAuth, OAuthError
-
 
 from dotenv import load_dotenv
 
 from db.database import Base, engine
-from db.schema import User as SchemaUser
 
 from utils.auth_bearer import Auth
 
@@ -51,9 +46,8 @@ auth_handler = Auth()
 
 @app.get('/api/refresh_token')
 def refresh(request: Request):
-    #auth_handler.decode_token(request.session.get('access_token'))
+
     refresh_token = request.session.get('refresh_token')
-    print(refresh_token)
     new_token = auth_handler.refresh_token(refresh_token)
     request.session['access_token'] = new_token
     return JSONResponse(status_code=200, content={'msg': 'Access token updated'})
@@ -64,7 +58,7 @@ def public(request: Request):
     access_token = request.session.get('access_token')
     if access_token and auth_handler.decode_token(access_token):
         return RedirectResponse('/dashboard')
-    return HTMLResponse(f"<a href='/signup'><button>Sign Up</button></a>  <a href='/signin'><button>Sign In</button></a>")
+    return HTMLResponse("<a href='/signup'><button>Sign Up</button></a>  <a href='/signin'><button>Sign In</button></a>")
 
 
 if __name__ == "__main__":

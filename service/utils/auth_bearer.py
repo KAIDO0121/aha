@@ -1,4 +1,5 @@
 
+from pprint import pprint
 from passlib.context import CryptContext
 import jwt
 import os
@@ -15,40 +16,12 @@ API_REFRESH_TOKEN_EXPIRE_HOURS = cast_to_number(
     'API_REFRESH_TOKEN_EXPIRE_HOURS') or 10
 
 
-'''
-class JWTBearer(HTTPBearer):
-    def __init__(self, auto_error: bool = True):
-        super(JWTBearer, self).__init__(auto_error=auto_error)
-
-    async def __call__(self, request: Request):
-        credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
-        if credentials:
-            if not credentials.scheme == "Bearer":
-                raise INVALID_CREDENTIAL_SCHEME
-            if not self.verify_jwt(credentials.credentials):
-                raise INVALID_OR_EXPIRED_TOKEN
-            return credentials.credentials
-        else:
-            raise CREDENTIALS_EXCEPTION
-
-    def verify_jwt(self, jwtoken: str) -> bool:
-        isTokenValid: bool = False
-
-        try:
-            payload = jwt.encode(jwtoken, API_SECRET_KEY, algorithm=API_ALGORITHM)
-        except:
-            payload = None
-        if payload:
-            isTokenValid = True
-        return isTokenValid
-'''
-
-
 class Auth():
     hasher = CryptContext(schemes=['bcrypt'])
     secret = API_SECRET_KEY
 
     def encode_token(self, email, _id, name=None):
+        pprint(API_ACCESS_TOKEN_EXPIRE_MINUTES)
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),

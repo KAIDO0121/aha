@@ -1,19 +1,16 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status, Security
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Depends
 from fastapi.templating import Jinja2Templates
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, JSONResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 from sqlalchemy.orm import Session
 
-from db.schema import User as SchemaUser
 from db.schema import UserEditName
 
 from crud import user as user_crud
 from utils.utils import get_db, CREDENTIALS_EXCEPTION
-
 
 import pathlib
 
@@ -21,8 +18,6 @@ import os
 
 from utils.auth_bearer import Auth
 
-
-security = HTTPBearer()
 auth_handler = Auth()
 router = APIRouter()
 

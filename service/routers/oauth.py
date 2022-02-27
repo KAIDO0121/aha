@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, JSONResponse
+from starlette.responses import RedirectResponse
 from starlette.config import Config
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
@@ -53,13 +53,12 @@ class GoogleOAuth:
 
             user_data = await oauth.google.parse_id_token(request, access_token)
 
-            exist = user_crud.get_user_by_email(db, email=user_data['email'])
+            exist = user_crud.get_user_by_google_id(
+                db, google_id=user_data['sub'])
             userid = None
             if exist:
-                userid = exist.id
-                if not exist.google_id:
-                    exist.google_id = user_data['sub']
                 user_crud.update_user_logs(db, exist)
+                userid = exist.id
             else:
                 newuser = user_crud.oauth_create_user(
                     db=db, user=user_data, google_id=user_data['sub'])
@@ -67,7 +66,8 @@ class GoogleOAuth:
                 user_crud.update_user_logs(db, newuser)
 
             token = auth_handler.encode_token(user_data['email'], userid)
-            refresh_token = auth_handler.encode_refresh_token(user_data['email'], userid)
+            refresh_token = auth_handler.encode_refresh_token(
+                user_data['email'], userid)
             request.session['refresh_token'] = refresh_token
             request.session['access_token'] = token
             request.session['verified'] = True
@@ -113,12 +113,10 @@ class FacebookOAuth:
                 'https://graph.facebook.com/me?fields=id,name,email', token=p)
             profile = resp.json()
 
-            exist = user_crud.get_user_by_email(db, email=profile['email'])
+            exist = user_crud.get_user_by_fb_id(db, fb_id=profile['id'])
             userid = None
             if exist:
                 userid = exist.id
-                if not exist.facebook_id:
-                    exist.facebook_id = profile['id']
                 user_crud.update_user_logs(db, exist)
             else:
                 newuser = user_crud.oauth_create_user(
@@ -127,7 +125,8 @@ class FacebookOAuth:
                 user_crud.update_user_logs(db, newuser)
 
             token = auth_handler.encode_token(profile['email'], userid)
-            refresh_token = auth_handler.encode_refresh_token(profile['email'], userid)
+            refresh_token = auth_handler.encode_refresh_token(
+                profile['email'], userid)
             request.session['refresh_token'] = refresh_token
             request.session['access_token'] = token
             request.session['verified'] = True

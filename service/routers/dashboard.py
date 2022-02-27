@@ -12,14 +12,12 @@ from db.schema import UserResetPassWord
 
 from crud.user import pwd_context
 from crud import user as user_crud
-from utils.utils import get_db, WRONG_PASSWORD
+
+from utils.utils import get_db, WRONG_PASSWORD, NEWPASSWORD_EXISTS
+from utils.auth_bearer import Auth
 
 import pathlib
 
-from utils.auth_bearer import Auth
-
-
-security = HTTPBearer()
 auth_handler = Auth()
 router = APIRouter()
 
@@ -57,6 +55,9 @@ def resetpassword(user: UserResetPassWord, request: Request, db: Session = Depen
 
     if not pwd_context.verify(user.oldpw, exist.hashed_password):
         raise WRONG_PASSWORD
+    if user.oldpw == user.password:
+        raise NEWPASSWORD_EXISTS
+
     user_crud.reset_user_pw(db, exist, user.password)
 
     return JSONResponse(status_code=200, content={'msg': 'success'})

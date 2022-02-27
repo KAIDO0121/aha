@@ -4,6 +4,7 @@ from db.database import SessionLocal
 import os
 from pprint import pprint
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -51,4 +52,14 @@ USERNAME_NOT_FOUND = HTTPException(
 WRONG_PASSWORD = HTTPException(
     status_code=status.HTTP_404_NOT_FOUND,
     detail='Wrong password'
+)
+
+NEWPASSWORD_EXISTS = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="You can't use old password as new password"
+)
+
+EMAIL_EXISTS = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="Email already registered"
 )
