@@ -29,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(DBSessionMiddleware,
-                   db_url=os.getenv('DATABASE_URL'))
+                   db_url=os.getenv('DATABASE_URI'))
 SESSION_SECRET = os.getenv('SESSION_SECRET')
 app.add_middleware(SessionMiddleware,
                    secret_key=SESSION_SECRET, https_only=True)
