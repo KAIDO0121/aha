@@ -10,11 +10,11 @@ from sqlalchemy.orm import Session
 
 from db.schema import UserLogin
 
-from crud import user as user_crud
-from utils.utils import get_db, USERNAME_NOT_FOUND, WRONG_PASSWORD
+from service.crud import user as user_crud
+from service.utils.utils import get_db, USERNAME_NOT_FOUND, WRONG_PASSWORD
 
-from utils.auth_bearer import Auth
-from crud.user import pwd_context
+from service.utils.auth_bearer import Auth
+from service.crud.user import pwd_context
 
 import pathlib
 

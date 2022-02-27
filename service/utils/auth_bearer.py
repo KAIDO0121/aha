@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 import jwt
 import os
 from datetime import datetime, timedelta
-from utils.utils import CREDENTIALS_EXCEPTION, INVALID_CREDENTIAL_SCHEME, INVALID_OR_EXPIRED_TOKEN, cast_to_number
+from service.utils.utils import CREDENTIALS_EXCEPTION, INVALID_CREDENTIAL_SCHEME, INVALID_OR_EXPIRED_TOKEN, cast_to_number
 
 API_SECRET_KEY = os.environ.get('API_SECRET_KEY') or None
 if API_SECRET_KEY is None:

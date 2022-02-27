@@ -8,13 +8,13 @@ from starlette.responses import JSONResponse, RedirectResponse
 
 from sqlalchemy.orm import Session
 
-from db.schema import UserResetPassWord
+from service.db.schema import UserResetPassWord
 
-from crud.user import pwd_context
-from crud import user as user_crud
+from service.crud.user import pwd_context
+from service.crud import user as user_crud
 
-from utils.utils import get_db, WRONG_PASSWORD, NEWPASSWORD_EXISTS
-from utils.auth_bearer import Auth
+from service.utils.utils import get_db, WRONG_PASSWORD, NEWPASSWORD_EXISTS
+from service.utils.auth_bearer import Auth
 
 import pathlib
 

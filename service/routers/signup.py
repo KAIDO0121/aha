@@ -11,14 +11,14 @@ from sqlalchemy.orm import Session
 from db.schema import User as SchemaUser
 from db.schema import UserCreate
 
-from crud import user as user_crud
-from utils.utils import get_db, EMAIL_EXISTS
+from service.crud import user as user_crud
+from service.utils.utils import get_db, EMAIL_EXISTS
 
-from routers.sendmail import send_with_template
+from service.routers.sendmail import send_with_template
 
 import pathlib
 
-from utils.auth_bearer import Auth
+from service.utils.auth_bearer import Auth
 
 auth_handler = Auth()
 router = APIRouter()

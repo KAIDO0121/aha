@@ -9,10 +9,10 @@ from authlib.integrations.starlette_client import OAuth, OAuthError
 
 from sqlalchemy.orm import Session
 
-from crud import user as user_crud
+from service.crud import user as user_crud
 
-from utils.utils import get_db, CREDENTIALS_EXCEPTION
-from utils.auth_bearer import Auth
+from service.utils.utils import get_db, CREDENTIALS_EXCEPTION
+from service.utils.auth_bearer import Auth
 
 auth_handler = Auth()
 router = APIRouter()

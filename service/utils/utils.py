@@ -1,8 +1,7 @@
-from fastapi import Request, HTTPException
+from fastapi import HTTPException
 from fastapi import status
-from db.database import SessionLocal
+from service.db.database import SessionLocal
 import os
-from pprint import pprint
 
 
 def get_db():

@@ -10,7 +10,7 @@ from starlette.responses import JSONResponse
 
 from dotenv import load_dotenv
 
-from utils.auth_bearer import Auth
+from service.utils.auth_bearer import Auth
 
 auth_handler = Auth()
 

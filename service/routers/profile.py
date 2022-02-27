@@ -7,16 +7,16 @@ from starlette.responses import RedirectResponse, JSONResponse
 
 from sqlalchemy.orm import Session
 
-from db.schema import UserEditName
+from service.db.schema import UserEditName
 
-from crud import user as user_crud
-from utils.utils import get_db, CREDENTIALS_EXCEPTION
+from service.crud import user as user_crud
+from service.utils.utils import get_db, CREDENTIALS_EXCEPTION
 
 import pathlib
 
 import os
 
-from utils.auth_bearer import Auth
+from service.utils.auth_bearer import Auth
 
 auth_handler = Auth()
 router = APIRouter()
