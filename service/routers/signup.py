@@ -53,6 +53,9 @@ def confirm_email(request: Request):
 
 @router.post("/api/register", response_model=SchemaUser)
 async def create_user(user: UserCreate, request: Request, db: Session = Depends(get_db)):
+    access_token = request.session.get('access_token')
+    if access_token:
+        return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
     exist = user_crud.get_user_by_email(db, email=user.email)
 
     if exist and not exist.facebook_id and not exist.google_id:
@@ -84,9 +87,7 @@ async def create_user(user: UserCreate, request: Request, db: Session = Depends(
 
 @router.route("/signup")
 def signup(request: Request):
-    access_token = request.session.get('access_token')
-    if access_token:
-        return RedirectResponse('/dashboard')
+
     server_url = os.getenv('SERVER_URL')
     return TEMPLATES.TemplateResponse(
         "signup.html",
