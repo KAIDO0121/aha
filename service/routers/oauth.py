@@ -45,7 +45,7 @@ class GoogleOAuth:
             payload = auth_handler.decode_token(request.session.get(
                 'access_token'), options={"verify_signature": False})
             print(payload)
-            if not payload or payload.get('exp') < datetime.utcnow():
+            if not payload or payload.get('exp') < datetime.now().timestamp():
                 redirect_uri = request.url_for('google_oauth')
                 return await oauth.google.authorize_redirect(request, redirect_uri)
             else:
@@ -109,7 +109,7 @@ class FacebookOAuth:
         async def fb_oauth_login(request: Request):
             payload = auth_handler.decode_token(request.session.get(
                 'access_token'), options={"verify_signature": False})
-            if not payload or payload.get('exp') < datetime.utcnow():
+            if not payload or payload.get('exp') < datetime.now().timestamp():
                 redirect_uri = request.url_for('fb_oauth')
                 return await oauth.facebook.authorize_redirect(request, redirect_uri)
             else:
