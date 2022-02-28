@@ -32,10 +32,6 @@ async def send_with_template(user: dict, body: dict):
     mail.header = Header("Priority", "Urgent")
     try:
         response = sg.client.mail.send.post(request_body=mail.get())
-
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
     except HTTPError as e:
         print(e.body)
         raise HTTPError
