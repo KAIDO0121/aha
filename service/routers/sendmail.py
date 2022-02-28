@@ -37,7 +37,7 @@ async def send_with_template(user: dict, body: dict):
     to_email = To(user.get("email"))
     subject = "Verification from AHA-app"
     content = Content(
-        "text/plain", f"Hello {body['email']} Click <a href='{body['confirm_url']}'>here</a> to verify your account.")
+        "ttext/html", f"Hello {body['email']} Click <a href={body['confirm_url']}>here</a> to verify your account.")
     mail = Mail(from_email, to_email, subject, content)
     try:
         response = sg.client.mail.send.post(request_body=mail.get())
@@ -62,7 +62,7 @@ async def resend_verification_email(request: Request):
     to_email = To(payload['email'])
     subject = "Verification from AHA-app"
     content = Content(
-        "text/plain", f"Hello {payload['email']} Click <a href='{confirm_url}'>here</a> to verify your account.")
+        "text/html", f"Hello {payload['email']} Click <a href={confirm_url}>here</a> to verify your account.")
 
     mail = Mail(from_email, to_email, subject, content)
     try:
