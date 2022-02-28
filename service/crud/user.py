@@ -71,8 +71,6 @@ def create_user(db: Session, user: UserCreate):
 
     db.add(db_user)
     db.commit()
-    db_user.create_time = datetime.datetime.now()  # workaround
-    db.commit()
     db.refresh(db_user)
     return db_user
 
@@ -93,8 +91,6 @@ def oauth_create_user(db: Session, user: dict, **kwargs):
                        email_verified=True,
                        login_times=0)
     db.add(db_user)
-    db.commit()
-    db_user.create_time = datetime.datetime.now()  # workaround
     db.commit()
     db.refresh(db_user)
     return db_user
