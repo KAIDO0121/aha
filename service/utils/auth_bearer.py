@@ -23,8 +23,8 @@ class Auth():
     def encode_token(self, email, _id, name=None):
 
         payload = {
-            'exp': datetime.now().timestamp() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
-            'iat': datetime.now().timestamp(),
+            'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
+            'iat': datetime.utcnow(),
             'scope': 'access_token',
             'email': email,
             'id': _id
@@ -52,8 +52,8 @@ class Auth():
 
     def encode_refresh_token(self, email, _id):
         payload = {
-            'exp': datetime.now().timestamp() + timedelta(days=0, hours=API_REFRESH_TOKEN_EXPIRE_HOURS),
-            'iat': datetime.now().timestamp(),
+            'exp': datetime.utcnow() + timedelta(days=0, hours=API_REFRESH_TOKEN_EXPIRE_HOURS),
+            'iat': datetime.utcnow(),
             'scope': 'refresh_token',
             'email': email,
             'id': _id
