@@ -6,7 +6,16 @@
   </a>
 </button>
 
-{% if not name %}
+<button>
+  <a href="/userdb_dashboard">
+    User Database Dashboard 
+  </a>
+</button>
+
+{% if name %}
+
+{% else %}
+
 <form action="{{ server_url }}/api/resetpassword" method="post" id="myForm">
   <label for="email">Please fill in your email and password</label>  
   <p><input id="oldpw" name="oldpw" value="" type="password" placeholder="Old password"></p>
@@ -17,8 +26,6 @@
   <p><input type="submit" value="Submit form"></p>
   
 </form>
-{% endif %}
-
 
 <script>
   window.addEventListener( "load", function () {
@@ -57,6 +64,10 @@
   } );
 } );
 </script>
+
+{% endif %}
+
+
 
 
 
