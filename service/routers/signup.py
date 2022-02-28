@@ -15,7 +15,7 @@ from service.db.schema import User as SchemaUser
 from service.db.schema import UserCreate
 
 from service.crud import user as user_crud
-from service.utils.utils import get_db, EMAIL_EXISTS
+from service.utils.utils import get_db, EMAIL_EXISTS, ALREADY_LOGIN
 
 from service.routers.sendmail import send_with_template
 
@@ -62,8 +62,7 @@ async def create_user(user: UserCreate, request: Request, db: Session = Depends(
             'access_token'), options={"verify_signature": False})
 
         if payload.get('exp') >= datetime.now().timestamp():
-            return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
-
+            raise ALREADY_LOGIN
     exist = user_crud.get_user_by_email(db, email=user.email)
 
     if exist and not exist.facebook_id and not exist.google_id:

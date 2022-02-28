@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from service.crud import user as user_crud
 
-from service.utils.utils import get_db, CREDENTIALS_EXCEPTION
+from service.utils.utils import get_db, CREDENTIALS_EXCEPTION, ALREADY_LOGIN
 from service.utils.auth_bearer import Auth
 
 auth_handler = Auth()
@@ -53,7 +53,7 @@ class GoogleOAuth:
 
                 return await oauth.google.authorize_redirect(request, redirect_uri)
             else:
-                return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
+                raise ALREADY_LOGIN
 
         @router.route('/api/oauth/google')
         async def google_oauth(request: Request,  db: Session = next(get_db())):
@@ -122,7 +122,7 @@ class FacebookOAuth:
 
                 return await oauth.facebook.authorize_redirect(request, redirect_uri)
             else:
-                return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
+                raise ALREADY_LOGIN
 
         @router.route('/api/oauth/facebook')
         async def fb_oauth(request: Request,  db: Session = next(get_db())):

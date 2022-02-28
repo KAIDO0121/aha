@@ -62,3 +62,8 @@ EMAIL_EXISTS = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="Email already registered"
 )
+
+ALREADY_LOGIN = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="You already login, please logout and try again"
+)

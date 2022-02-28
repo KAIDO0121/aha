@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from service.db.schema import UserLogin
 
 from service.crud import user as user_crud
-from service.utils.utils import get_db, USERNAME_NOT_FOUND, WRONG_PASSWORD
+from service.utils.utils import get_db, USERNAME_NOT_FOUND, WRONG_PASSWORD, ALREADY_LOGIN
 
 from service.utils.auth_bearer import Auth
 from service.crud.user import pwd_context
@@ -38,7 +38,7 @@ def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db))
             'access_token'), options={"verify_signature": False})
 
         if payload.get('exp') >= datetime.now().timestamp():
-            return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
+            raise ALREADY_LOGIN
 
     exist = user_crud.get_user_by_email(db, email=user.email)
     if not exist:
