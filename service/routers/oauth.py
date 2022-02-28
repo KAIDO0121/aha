@@ -1,6 +1,8 @@
 import os
 from fastapi import APIRouter
 
+from datetime import datetime, timedelta
+
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, JSONResponse
 from starlette.config import Config
@@ -40,12 +42,14 @@ class GoogleOAuth:
 
         @router.route('/api/oauth/google/register_and_login')
         async def google_oauth_login(request: Request):
-            access_token = request.session.get('access_token')
-            if access_token:
+            payload = auth_handler.decode_token(request.session.get(
+                'access_token'), options={"verify_signature": False})
+            print(payload)
+            if not payload or payload.get('exp') < datetime.utcnow():
+                redirect_uri = request.url_for('google_oauth')
+                return await oauth.google.authorize_redirect(request, redirect_uri)
+            else:
                 return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
-
-            redirect_uri = request.url_for('google_oauth')
-            return await oauth.google.authorize_redirect(request, redirect_uri)
 
         @router.route('/api/oauth/google')
         async def google_oauth(request: Request,  db: Session = next(get_db())):
@@ -103,12 +107,13 @@ class FacebookOAuth:
 
         @router.route('/api/oauth/facebook/register_and_login')
         async def fb_oauth_login(request: Request):
-            access_token = request.session.get('access_token')
-            if access_token:
+            payload = auth_handler.decode_token(request.session.get(
+                'access_token'), options={"verify_signature": False})
+            if not payload or payload.get('exp') < datetime.utcnow():
+                redirect_uri = request.url_for('fb_oauth')
+                return await oauth.facebook.authorize_redirect(request, redirect_uri)
+            else:
                 return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
-
-            redirect_uri = request.url_for('fb_oauth')
-            return await oauth.facebook.authorize_redirect(request, redirect_uri)
 
         @router.route('/api/oauth/facebook')
         async def fb_oauth(request: Request,  db: Session = next(get_db())):

@@ -38,10 +38,10 @@ class Auth():
             algorithm=API_ALGORITHM
         )
 
-    def decode_token(self, token):
+    def decode_token(self, token, options=None):
         try:
             payload = jwt.decode(token, self.secret,
-                                 algorithms=[API_ALGORITHM])
+                                 algorithms=[API_ALGORITHM], options=options)
             if (payload['scope'] == 'access_token'):
                 return payload
             raise INVALID_CREDENTIAL_SCHEME
