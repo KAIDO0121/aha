@@ -2,10 +2,12 @@
 from fastapi import APIRouter, Depends
 from fastapi.templating import Jinja2Templates
 
+from datetime import datetime
+
 import os
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import JSONResponse
 import os
 from sqlalchemy.orm import Session
 
@@ -29,8 +31,9 @@ TEMPLATES = Jinja2Templates(
 
 @router.post("/api/login")
 def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db)):
-    access_token = request.session.get('access_token')
-    if access_token:
+    payload = auth_handler.decode_token(request.session.get(
+        'access_token'), options={"verify_signature": False})
+    if payload.get('exp') < datetime.now().timestamp():
         return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
 
     exist = user_crud.get_user_by_email(db, email=user.email)
