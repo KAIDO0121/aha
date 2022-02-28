@@ -65,7 +65,8 @@ class GoogleOAuth:
                 userid = newuser.id
                 user_crud.update_user_logs(db, newuser)
 
-            token = auth_handler.encode_token(user_data['email'], userid)
+            token = auth_handler.encode_token(
+                user_data['email'], userid, user_data['name'])
             refresh_token = auth_handler.encode_refresh_token(
                 user_data['email'], userid)
             request.session['refresh_token'] = refresh_token
@@ -124,7 +125,8 @@ class FacebookOAuth:
                 userid = newuser.id
                 user_crud.update_user_logs(db, newuser)
 
-            token = auth_handler.encode_token(profile['email'], userid)
+            token = auth_handler.encode_token(
+                profile['email'], userid, profile['name'])
             refresh_token = auth_handler.encode_refresh_token(
                 profile['email'], userid)
             request.session['refresh_token'] = refresh_token

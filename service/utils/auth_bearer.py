@@ -21,7 +21,7 @@ class Auth():
     secret = API_SECRET_KEY
 
     def encode_token(self, email, _id, name=None):
-        pprint(API_ACCESS_TOKEN_EXPIRE_MINUTES)
+
         payload = {
             'exp': datetime.utcnow() + timedelta(days=0, minutes=API_ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),

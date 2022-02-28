@@ -12,12 +12,10 @@
   </a>
 </button>
 
-{% if name %}
-
-{% else %}
+{% if not name %}
 
 <form action="{{ server_url }}/api/resetpassword" method="post" id="myForm">
-  <label for="email">Please fill in your email and password</label>  
+  <label for="email">Reset your password</label>  
   <p><input id="oldpw" name="oldpw" value="" type="password" placeholder="Old password"></p>
   <p><input id="password" type="password" 
     name="password" value="" placeholder="New password"></p>

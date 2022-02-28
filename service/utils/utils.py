@@ -39,7 +39,7 @@ INVALID_CREDENTIAL_SCHEME = HTTPException(
 
 INVALID_OR_EXPIRED_TOKEN = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
-    detail='Invalid token or expired token.',
+    detail='Token expired, please try login again.',
     headers={'WWW-Authenticate': 'Bearer'},
 )
 
