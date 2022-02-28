@@ -2,7 +2,6 @@ import os
 import pathlib
 from urllib.request import Request
 
-from fastapi.security import HTTPBearer
 from fastapi import APIRouter
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 

@@ -71,8 +71,11 @@ async def create_user(user: UserCreate, request: Request, db: Session = Depends(
         "confirm_url": confirm_url,
         "email": user.email
     }
-
-    res = await send_with_template(user.dict(), body)
+    try:
+        res = await send_with_template(user.dict(), body)
+    except Exception as e:
+        print(e)
+        raise e
     request.session['access_token'] = access_token
     request.session['refresh_token'] = refresh_token
     request.session['verified'] = False
