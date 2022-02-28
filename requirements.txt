@@ -22,7 +22,6 @@ dnspython==2.2.0
 email-validator==1.1.3
 fakeredis==1.7.1
 fastapi==0.73.0
-fastapi-mail==1.0.4
 FastAPI-SQLAlchemy==0.2.1
 filelock==3.3.1
 Flask==2.0.2

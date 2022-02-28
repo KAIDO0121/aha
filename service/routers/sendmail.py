@@ -3,7 +3,6 @@ import pathlib
 from urllib.request import Request
 
 from fastapi import APIRouter
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from python_http_client.exceptions import HTTPError
 
 import sendgrid
@@ -19,16 +18,6 @@ auth_handler = Auth()
 
 router = APIRouter()
 load_dotenv()
-conf = ConnectionConfig(
-    MAIL_USERNAME=os.getenv('MAIL_USERNAME'),
-    MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-    MAIL_PORT=int(os.getenv('MAIL_PORT')),
-    MAIL_SERVER=os.getenv('MAIL_SERVER'),
-    MAIL_TLS=True,
-    MAIL_SSL=False,
-    USE_CREDENTIALS=True,
-    TEMPLATE_FOLDER=f'{pathlib.Path(__file__).parent.resolve()}/templates'
-)
 
 
 async def send_with_template(user: dict, body: dict):
@@ -39,6 +28,8 @@ async def send_with_template(user: dict, body: dict):
     content = Content(
         "ttext/html", f"Hello {body['email']} Click <a href={body['confirm_url']}>here</a> to verify your account.")
     mail = Mail(from_email, to_email, subject, content)
+    mail.header = Header("Importance", "High")
+    mail.header = Header("Priority", "Urgent")
     try:
         response = sg.client.mail.send.post(request_body=mail.get())
 
@@ -65,12 +56,12 @@ async def resend_verification_email(request: Request):
         "text/html", f"Hello {payload['email']} Click <a href={confirm_url}>here</a> to verify your account.")
 
     mail = Mail(from_email, to_email, subject, content)
+    mail.header = Header("Importance", "High")
+    mail.header = Header("Priority", "Urgent")
     try:
         response = sg.client.mail.send.post(request_body=mail.get())
 
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        return JSONResponse(status_code=200, content={'msg': 'Email has been sent.'})
     except HTTPError as e:
         print(e.body)
         raise HTTPError
