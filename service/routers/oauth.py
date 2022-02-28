@@ -42,10 +42,15 @@ class GoogleOAuth:
 
         @router.route('/api/oauth/google/register_and_login')
         async def google_oauth_login(request: Request):
-            payload = auth_handler.decode_token(request.session.get(
-                'access_token'), options={"verify_signature": False})
-            if not payload or payload.get('exp') < datetime.now().timestamp():
-                redirect_uri = request.url_for('google_oauth')
+            token = request.session.get('access_token')
+            redirect_uri = request.url_for('google_oauth')
+
+            if not token:
+                return await oauth.google.authorize_redirect(request, redirect_uri)
+            payload = auth_handler.decode_token(
+                token, options={"verify_signature": False})
+            if payload.get('exp') < datetime.now().timestamp():
+
                 return await oauth.google.authorize_redirect(request, redirect_uri)
             else:
                 return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
@@ -106,10 +111,15 @@ class FacebookOAuth:
 
         @router.route('/api/oauth/facebook/register_and_login')
         async def fb_oauth_login(request: Request):
-            payload = auth_handler.decode_token(request.session.get(
-                'access_token'), options={"verify_signature": False})
-            if not payload or payload.get('exp') < datetime.now().timestamp():
-                redirect_uri = request.url_for('fb_oauth')
+            token = request.session.get('access_token')
+            redirect_uri = request.url_for('fb_oauth')
+
+            if not token:
+                return await oauth.facebook.authorize_redirect(request, redirect_uri)
+            payload = auth_handler.decode_token(
+                token, options={"verify_signature": False})
+            if payload.get('exp') < datetime.now().timestamp():
+
                 return await oauth.facebook.authorize_redirect(request, redirect_uri)
             else:
                 return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
