@@ -29,6 +29,7 @@ async def send_with_template(user: dict, body: dict):
         "ttext/html", f"Hello {body['email']} Click <a href={body['confirm_url']}>here</a> to verify your account.")
     mail = Mail(from_email, to_email, subject, content)
     mail.header = Header("Importance", "High")
+    mail.header = Header("Priority", "Urgent")
     try:
         response = sg.client.mail.send.post(request_body=mail.get())
 
@@ -56,6 +57,7 @@ async def resend_verification_email(request: Request):
 
     mail = Mail(from_email, to_email, subject, content)
     mail.header = Header("Importance", "High")
+    mail.header = Header("Priority", "Urgent")
     try:
         response = sg.client.mail.send.post(request_body=mail.get())
 
