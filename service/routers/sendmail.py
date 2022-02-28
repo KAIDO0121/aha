@@ -46,7 +46,7 @@ async def send_with_template(user: dict, body: dict):
         print(response.body)
         print(response.headers)
     except HTTPError as e:
-        raise e
+        print(e.body)
 
     # message = MessageSchema(
     #     subject="Verification mail",
@@ -83,4 +83,4 @@ async def resend_verification_email(request: Request):
         print(response.body)
         print(response.headers)
     except HTTPError as e:
-        raise e
+        print(e.body)
