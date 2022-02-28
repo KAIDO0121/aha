@@ -33,7 +33,7 @@ conf = ConnectionConfig(
 
 async def send_with_template(user: dict, body: dict):
     sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-    from_email = Email(os.getenv('MAIL_USERNAME'))
+    from_email = Email(os.getenv('MAIL_FROM'))
     to_email = To(user.get("email"))
     subject = "Verification from AHA-app"
     content = Content(
@@ -47,6 +47,7 @@ async def send_with_template(user: dict, body: dict):
         print(response.headers)
     except HTTPError as e:
         print(e.body)
+        raise HTTPError
 
     # message = MessageSchema(
     #     subject="Verification mail",
@@ -70,7 +71,7 @@ async def resend_verification_email(request: Request):
     confirm_url = f'{url}/api/confirm/{access_token}'
 
     sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-    from_email = Email(os.getenv('MAIL_USERNAME'))
+    from_email = Email(os.getenv('MAIL_FROM'))
     to_email = To(payload['email'])
     subject = "Verification from AHA-app"
     content = Content(
@@ -84,3 +85,4 @@ async def resend_verification_email(request: Request):
         print(response.headers)
     except HTTPError as e:
         print(e.body)
+        raise HTTPError
