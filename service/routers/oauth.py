@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter
 
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 from starlette.config import Config
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
@@ -40,6 +40,9 @@ class GoogleOAuth:
 
         @router.route('/api/oauth/google/register_and_login')
         async def google_oauth_login(request: Request):
+            access_token = request.session.get('access_token')
+            if access_token:
+                return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
 
             redirect_uri = request.url_for('google_oauth')
             return await oauth.google.authorize_redirect(request, redirect_uri)
@@ -100,6 +103,10 @@ class FacebookOAuth:
 
         @router.route('/api/oauth/facebook/register_and_login')
         async def fb_oauth_login(request: Request):
+            access_token = request.session.get('access_token')
+            if access_token:
+                return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
+
             redirect_uri = request.url_for('fb_oauth')
             return await oauth.facebook.authorize_redirect(request, redirect_uri)
 
