@@ -26,7 +26,7 @@ async def send_with_template(user: dict, body: dict):
     to_email = To(user.get("email"))
     subject = "Verification from AHA-app"
     content = Content(
-        "ttext/html", f"Hello {body['email']} Click <a href={body['confirm_url']}>here</a> to verify your account.")
+        "text/html", f"Hello {body['email']} Click <a href={body['confirm_url']}>here</a> to verify your account.")
     mail = Mail(from_email, to_email, subject, content)
     mail.header = Header("Importance", "High")
     mail.header = Header("Priority", "Urgent")
