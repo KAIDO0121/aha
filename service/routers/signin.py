@@ -1,7 +1,8 @@
 
 from fastapi import APIRouter, Depends
-from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
+
+import os
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse
@@ -48,8 +49,8 @@ def signin(request: Request):
     access_token = request.session.get('access_token')
     if access_token and auth_handler.decode_token(access_token):
         return RedirectResponse('/dashboard')
-
+    server_url = os.getenv('SERVER_URL')
     return TEMPLATES.TemplateResponse(
         "signin.html",
-        {"request": request}
+        {"request": request, "server_url": server_url}
     )
