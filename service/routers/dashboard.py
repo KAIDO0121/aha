@@ -55,7 +55,7 @@ def resetpassword(user: UserResetPassWord, request: Request, db: Session = Depen
 
     if not pwd_context.verify(user.oldpw, exist.hashed_password):
         raise WRONG_PASSWORD
-    if user.oldpw == user.password:
+    if pwd_context.verify(user.password, exist.hashed_password):
         raise NEWPASSWORD_EXISTS
 
     user_crud.reset_user_pw(db, exist, user.password)
