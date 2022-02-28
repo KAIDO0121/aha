@@ -85,7 +85,7 @@ async def create_user(user: UserCreate, request: Request, db: Session = Depends(
 @router.route("/signup")
 def signup(request: Request):
     access_token = request.session.get('access_token')
-    if access_token and auth_handler.decode_token(access_token):
+    if access_token:
         return RedirectResponse('/dashboard')
     server_url = os.getenv('SERVER_URL')
     return TEMPLATES.TemplateResponse(

@@ -47,7 +47,7 @@ def login_user(user: UserLogin, request: Request, db: Session = Depends(get_db))
 @router.route("/signin")
 def signin(request: Request):
     access_token = request.session.get('access_token')
-    if access_token and auth_handler.decode_token(access_token):
+    if access_token:
         return RedirectResponse('/dashboard')
     server_url = os.getenv('SERVER_URL')
     return TEMPLATES.TemplateResponse(
