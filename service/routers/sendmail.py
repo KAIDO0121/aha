@@ -4,6 +4,7 @@ from urllib.request import Request
 
 from fastapi import APIRouter
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from python_http_client.exceptions import HTTPError
 
 import sendgrid
 from sendgrid.helpers.mail import *
@@ -44,7 +45,7 @@ async def send_with_template(user: dict, body: dict):
         print(response.status_code)
         print(response.body)
         print(response.headers)
-    except Exception as e:
+    except HTTPError as e:
         raise e
 
     # message = MessageSchema(
@@ -81,5 +82,5 @@ async def resend_verification_email(request: Request):
         print(response.status_code)
         print(response.body)
         print(response.headers)
-    except Exception as e:
+    except HTTPError as e:
         raise e
