@@ -5,6 +5,9 @@ from urllib.request import Request
 from fastapi import APIRouter
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
+import sendgrid
+from sendgrid.helpers.mail import *
+
 from starlette.responses import JSONResponse
 
 from dotenv import load_dotenv
@@ -28,18 +31,34 @@ conf = ConnectionConfig(
 
 
 async def send_with_template(user: dict, body: dict):
-    message = MessageSchema(
-        subject="Verification mail",
-        recipients=[user.get("email")],
-        template_body=body
-    )
-
-    fm = FastMail(conf)
+    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+    from_email = Email(os.getenv('MAIL_USERNAME'))
+    to_email = To(user.get("email"))
+    subject = "Verification from AHA-app"
+    content = Content(
+        "text/plain", f"Hello {body['email']} Click {body['confirm_url']} to verify your account")
+    mail = Mail(from_email, to_email, subject, content)
     try:
-        await fm.send_message(message, template_name="email.html")
-        return 'Success'
+        response = sg.client.mail.send.post(request_body=mail.get())
+
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
     except Exception as e:
         raise e
+
+    # message = MessageSchema(
+    #     subject="Verification mail",
+    #     recipients=[user.get("email")],
+    #     template_body=body
+    # )
+
+    # fm = FastMail(conf)
+    # try:
+    #     await fm.send_message(message, template_name="email.html")
+    #     return 'Success'
+    # except Exception as e:
+    #     raise e
 
 
 @router.route('/api/resend_verification_email')
@@ -49,20 +68,18 @@ async def resend_verification_email(request: Request):
     url = os.getenv('SERVER_URL')
     confirm_url = f'{url}/api/confirm/{access_token}'
 
-    body = {
-        "confirm_url": confirm_url,
-        "email": payload['email']
-    }
-
-    message = MessageSchema(
-        subject="Verification mail",
-        recipients=[payload['email']],
-        template_body=body
-    )
-
-    fm = FastMail(conf)
+    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
+    from_email = Email(os.getenv('MAIL_USERNAME'))
+    to_email = To(payload['email'])
+    subject = "Verification from AHA-app"
+    content = Content(
+        "text/plain", f"Hello {payload['email']} Click {confirm_url} to verify your account")
+    mail = Mail(from_email, to_email, subject, content)
     try:
-        await fm.send_message(message, template_name="email.html")
-        return JSONResponse(status_code=200, content={'msg': 'The verification email has been sent'})
+        response = sg.client.mail.send.post(request_body=mail.get())
+
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
     except Exception as e:
         raise e

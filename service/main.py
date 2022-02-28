@@ -55,9 +55,7 @@ def refresh(request: Request):
 
 @app.route('/landing')
 def public(request: Request):
-    access_token = request.session.get('access_token')
-    if access_token and auth_handler.decode_token(access_token):
-        return RedirectResponse('/dashboard')
+
     return HTMLResponse("<a href='/signup'><button>Sign Up</button></a>  <a href='/signin'><button>Sign In</button></a>")
 
     # uvicorn.run("main:app", log_level="debug",
