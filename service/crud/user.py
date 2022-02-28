@@ -2,7 +2,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 import datetime
 from service.db.user import User
-from service.db.schema import UserCreate, UserResetPassWord
+from service.db.schema import UserCreate
 
 from passlib.context import CryptContext
 
