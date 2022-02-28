@@ -57,36 +57,36 @@ def confirm_email(request: Request):
 async def create_user(user: UserCreate, request: Request, db: Session = Depends(get_db)):
     payload = auth_handler.decode_token(request.session.get(
         'access_token'), options={"verify_signature": False})
-    if payload.get('exp') < datetime.now().timestamp():
+    if not payload or payload.get('exp') < datetime.now().timestamp():
+        exist = user_crud.get_user_by_email(db, email=user.email)
+
+        if exist and not exist.facebook_id and not exist.google_id:
+            raise EMAIL_EXISTS
+
+        new_user = user_crud.create_user(db=db, user=user)
+
+        user_crud.update_user_logs(db, new_user)
+        access_token = auth_handler.encode_token(new_user.email, new_user.id)
+        refresh_token = auth_handler.encode_refresh_token(
+            new_user.email, new_user.id)
+
+        confirm_url = request.url_for('confirm_email', token=access_token)
+
+        body = {
+            "confirm_url": confirm_url,
+            "email": user.email
+        }
+        try:
+            res = await send_with_template(user.dict(), body)
+        except Exception as e:
+            print(e)
+            raise e
+        request.session['access_token'] = access_token
+        request.session['refresh_token'] = refresh_token
+        request.session['verified'] = False
+        return JSONResponse(status_code=200, content={'msg': 'success'})
+    else:
         return JSONResponse(status_code=200, content={'msg': 'You already login, please logout and try again'})
-
-    exist = user_crud.get_user_by_email(db, email=user.email)
-
-    if exist and not exist.facebook_id and not exist.google_id:
-        raise EMAIL_EXISTS
-
-    new_user = user_crud.create_user(db=db, user=user)
-
-    user_crud.update_user_logs(db, new_user)
-    access_token = auth_handler.encode_token(new_user.email, new_user.id)
-    refresh_token = auth_handler.encode_refresh_token(
-        new_user.email, new_user.id)
-
-    confirm_url = request.url_for('confirm_email', token=access_token)
-
-    body = {
-        "confirm_url": confirm_url,
-        "email": user.email
-    }
-    try:
-        res = await send_with_template(user.dict(), body)
-    except Exception as e:
-        print(e)
-        raise e
-    request.session['access_token'] = access_token
-    request.session['refresh_token'] = refresh_token
-    request.session['verified'] = False
-    return JSONResponse(status_code=200, content={'msg': 'success'})
 
 
 @router.route("/signup")
